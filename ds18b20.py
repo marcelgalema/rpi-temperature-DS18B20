@@ -9,21 +9,29 @@ class DS18B20:
     temp_c = 0
     temp_format = "c"
     precision = 2
+    debug = False
 
     def __init__(self, args=None):
         self.temp_format = args.format
         self.precision = args.precision
+        self.debug = args.debug
 
         # 1Wired sensors appear in this folder
         # DS18B20 sensors have an ID starting with 28
+        if self.debug:
+            self.base_dir = "." + self.base_dir
+
         globbed = glob.glob(self.base_dir + "28*")
         if len(globbed):
-            os.system("modprobe w1-gpio")
-            os.system("modprobe w1-therm")
+
+            if self.debug == False:
+                os.system("modprobe w1-gpio")
+                os.system("modprobe w1-therm")
+
             self.device_file = globbed[0] + "/w1_slave"
         else:
             print("No sensors found, exiting")
-            exit(1)
+            # exit(1)
 
     def __str__(self):
         return f"Sensor ID {self.get_id()}"

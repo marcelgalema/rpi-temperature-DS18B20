@@ -29,12 +29,13 @@ def handle_cli_args():
         choices=["c", "f"],
         default="c",
     )
+    parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = handle_cli_args()
-
+    
     sensor_ds18b20 = DS18B20(args)
     print(f"{sensor_ds18b20}, refresh every {args.refresh_rate} seconds\n")
 
