@@ -33,7 +33,7 @@ class DS18B20:
             print("No sensors found, exiting")
             # exit(1)
 
-    def __str__(self):
+    def __repr__(self):
         return f"Sensor ID {self.get_id()}"
 
     def get_id(self):
