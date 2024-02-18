@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import argparse
 import time
 from ds18b20 import DS18B20
-from flask import Flask, request
+from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.serving import WSGIRequestHandler
 from appargs import AppArgs

@@ -2,18 +2,28 @@ import os
 import glob
 import time
 
+# calibration explanation and info can be found on  https://www.instructables.com/Calibration-of-DS18B20-Sensor-With-Arduino-UNO/
+
 
 class DS18B20:
-    device_file = ""
-    base_dir = "/sys/bus/w1/devices/"
-    temp_c = 0
-    temp_format = "c"
-    precision = 2
-    debug = False
+    device_file: str = ""
+    base_dir: str = "/sys/bus/w1/devices/"
+    raw_high: float = 100  # the raw temp when the sensor is in boiling water
+    raw_low: float = 0  # the raw temp when the sensor is in melting ice
+    reference_high: float = 100.19  # in Utrecht, NL on 1 ft altitude
+    reference_low: float = 0
+    temp_c: int = 0
+    temp_format: str = "c"
+    precision: float = 2
+    debug: bool = False
 
     def __init__(self, args=None):
         self.temp_format = args.format
         self.precision = args.precision
+        self.raw_high = args.raw_high
+        self.raw_low = args.raw_low
+        self.reference_high = args.reference_high
+        self.reference_low = args.reference_low
         self.debug = args.debug
 
         # 1Wired sensors appear in this folder
@@ -39,18 +49,29 @@ class DS18B20:
     def get_id(self):
         return self.device_file.split("/")[5]
 
+    def raw_range(self):
+        return self.raw_high - self.raw_low
+
+    def reference_range(self):
+        return self.reference_high - self.reference_low
+
     def get_temperature(self):
         self.__read_temp()
+
+        calibrated_temp = (
+            ((self.temp_c - self.raw_low) * self.reference_range()) / self.raw_range()
+        ) + self.reference_low
+
         if self.temp_format == "c":
-            return self.__get_temparature_celsius()
+            return self.__get_temparature_celsius(calibrated_temp)
         else:
-            return self.___get_temparature_fahrenheit()
+            return self.___get_temparature_fahrenheit(calibrated_temp)
 
-    def __get_temparature_celsius(self):
-        return f"{self.temp_c:.{self.precision}f} Celsius"
+    def __get_temparature_celsius(self, calibrated_temp: float):
+        return f"{calibrated_temp:.{self.precision}f} Celsius"
 
-    def ___get_temparature_fahrenheit(self):
-        return f"{self.temp_c * 9.0 / 5.0 + 32.0:.{self.precision}f} Fahrenheit"
+    def ___get_temparature_fahrenheit(self, calibrated_temp: float):
+        return f"{calibrated_temp* 9.0 / 5.0 + 32.0:.{self.precision}f} Fahrenheit"
 
     def __read_temp_raw(self):
         f = open(self.device_file, "r")
